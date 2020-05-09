@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" integrity="sha256-2YQRJMXD7pIAPHiXr0s+vlRWA7GYJEK0ARns7k2sbHY=" crossorigin="anonymous" />
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <style>
+        #flash-card {
+            text-align:center;
+            padding:10px;
+            border: 1px solid grey;
+            width:100%;
+            max-width: 500px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            margin: 0 auto;
+            display:flex;
+            align-items: center;
+        }
+
+        #flash-card span {
+            font-size: 1em;
+
+        }
+
+        .input-wrap {
+            margin-top:25px;
+            display:flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+        }
+
+        #guess-form {
+            display:flex;
+            flex-direction: row;
+            justify-content: stretch;
+        }
+
+        #guess-form input {
+            width:50%;
+            box-sizing: border-box;
+         }
+
+    </style>
+    
+    <title>JS Flashcards - made with vanilla JS</title>
+</head>
+<body>
+   
+    <div class="container">
+        <h1>JS Flashcards</h1>
+        <div id="flash-card">
+            <span id="flash-card-txt"></span>
+        </div>
+        <div class="input-wrap">
+            <button id="previous"><i class="fa fa-angle-left "></i> Previous Card</button>
+            <button id="shuffle"><i class="fa fa-refresh"></i> Shuffle Cards <i class="fa fa-refresh"></i></button>
+            <button id="next">Next Card <i class="fa fa-angle-right"></i></button>
+        </div>
+        <div class="input-wrap">
+        <form id="guess-form">
+            <input type="text" id="guess-card" placeholder="Guess the back...">
+            <input type="submit" id="" placeholder="Guess the back...">
+        </form>
+    </div>
+    <button id="flip-btn" class="button" >Flip the Card</button>
+    <p class="message"></p>
+    </div>
+   
+<script src="app.js"></script>    
+</body>
+</html>
