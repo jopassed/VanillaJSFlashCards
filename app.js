@@ -5,27 +5,28 @@ const UIflashcard = document.querySelector('#flash-card');
 const UInextBtn = document.querySelector('#next');
 const UIprevBtn = document.querySelector('#previous');
 const UIshuffleBtn = document.querySelector('#shuffle');
-const UIguessBtn = document.querySelector('#flip-btn');
 
 //UI feedback
 const UImessage = document.querySelector('.message');
 const UIcardTxt = document.querySelector('#flash-card-txt');
 
-
 //guess form UI
 const UIform = document.querySelector('#guess-form');
 const UIguessInput = document.querySelector('#guess-card');
-
 
 //responsive event listeners
 window.addEventListener('load', loadEvents);
 window.addEventListener('resize', setCardHeight);
 
 //click events
-UIguessBtn.addEventListener('click', flipCard);
+UIflashcard.addEventListener('mousedown', flipCard);
+UIflashcard.addEventListener('mouseup', flipCard);
 UIshuffleBtn.addEventListener('click', shuffleCards);
 UInextBtn.addEventListener('click', nextCardinDeck);
 UIprevBtn.addEventListener('click', prevCardinDeck);
+
+//form guesser event
+UIform.addEventListener('submit', cardGuesser);
 
 //decks tracker
 let prevCardTracker = [];
@@ -61,59 +62,55 @@ function shuffleCards(){
     let randomInt = Math.floor(Math.random() * (deck.length));
     currentCard = deck[randomInt];
     UIcardTxt.innerText = currentCard.frontDesc;
-    console.log(currentCard);
 }
 
 //flip current card
 function flipCard(e){
     e.preventDefault();
     let currentTxt = UIcardTxt.innerText;
-    for (let index=0; index < deck.length; index++){
-        if (currentTxt === deck[index].frontDesc){
-            UIcardTxt.innerText = deck[index].backTerm;
-        } else if (currentTxt === deck[index].backTerm){
-            UIcardTxt.innerText = deck[index].frontDesc;
-        }
+    if(currentTxt === currentCard.frontDesc){
+        UIcardTxt.innerText = currentCard.backTerm;
+    } else {
+        UIcardTxt.innerText = currentCard.frontDesc;
     }
 }
 
-//select next card.
+//select next card
 function nextCardinDeck(){
-    let currentTxt = UIcardTxt.innerText;
-    for (let index=0; index < deck.length; index++){
-        if (deck.length > 1){
-           if (currentTxt === deck[index].frontDesc || currentTxt === deck[index].backTerm){
-                discardDeck.unshift(deck[index]);
-                deck.splice(index, 1);
-                let randomInt = Math.floor(Math.random() * (deck.length));
-                UIcardTxt.innerText = deck[randomInt].frontDesc;
-         
-            }
-        } else {
-            UImessage.innerText = 'Last Card of Next';
-            break;
-            
-        }
+    if (deck.length > 1){
+        deck.splice(deck.indexOf(currentCard), 1);
+        discardDeck.unshift(currentCard);
+        shuffleCards();
+    } else {
+        UIMessages('No More Cards...');
     }
 }
 
 //select previous cards
-
 function prevCardinDeck(){
-    let currentTxt = UIcardTxt.innerText;
-    for (let index=0; index < discardDeck.length; index++){
-        if (discardDeck.length >= 1){
-           deck.unshift(discardDeck[index]); 
-           UIcardTxt.innerText = discardDeck[index].frontDesc;
-           discardDeck.splice(index, 1);
-           console.log(discardDeck);
-           console.log(deck);
-         } else {
-             UImessage.innerText = 'Last Card of Previous';
-             break;
-             
-         }
-
+    if (discardDeck.length >= 1){
+        currentCard = discardDeck[0];
+        UIcardTxt.innerText = currentCard.frontDesc;
+        deck.unshift(currentCard);        
+        discardDeck.shift();
+    } else {
+        UIMessages('No More Cards...');
     }
-     
+}
+
+function UIMessages(msg){
+    UImessage.innerText = msg;
+    setTimeout(() => {
+     UImessage.innerText = '';
+    }, 3000);
+}
+
+function cardGuesser(e){
+    e.preventDefault();
+    if (UIguessInput.value === currentCard.backTerm){
+        UIMessages('Correct!');
+        UIcardTxt.innerText = currentCard.backTerm;
+    } else {
+        UIMessages('Incorrect!');
+    }
 }
