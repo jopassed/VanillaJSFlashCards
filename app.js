@@ -40,7 +40,7 @@ class Save {
             mainDeck.cards = JSON.parse(localStorage.getItem('mainDeck'));
             
         }
-        return mainDeck;
+        return mainDeck.cards;
         
     
     }
@@ -67,17 +67,17 @@ class Save {
 
     }
 
-    static removeCard(i) {
-        const mainDeck = Save.getDecks();
-        mainDeck.cards.forEach(function(card){
-          if(card[i]){
-              cards.splice(i, 1);
-          } 
-        });
+    // static removeCard(i) {
+    //     const mainDeck = new Deck(Save.getDecks());
+    //     mainDeck.cards.forEach(function(card){
+    //       if(card[i]){
+    //           cards.splice(i, 1);
+    //       } 
+    //     });
 
-        localStorage.setItem('mainDeck', JSON.stringify(mainDeck.cards));
+    //     localStorage.setItem('mainDeck', JSON.stringify(mainDeck.cards));
 
-    }
+    // }
 }
 
 //Card on Display
@@ -164,7 +164,7 @@ function setCardHeight(){
 
 
 function dealCard(){
-    const mainDeck = Save.getDecks();
+    const mainDeck = new Deck(Save.getDecks());
     displayedCard = mainDeck.cards[mainDeck.shuffle()];
     UIcardTxt.innerText = displayedCard.frontDesc;
    
@@ -183,10 +183,11 @@ function flipCard(e){
 
 //select next card
 function nextCardinDeck(){
-        const mainDeck = Save.getDecks(); //this isn't work cause on every click it's pulling the array from localStorage and not lowering the length.
-       
-      if (mainDeck.cards.length > 1){
-        Save.removeCard(mainDeck.cards.findIndex(displayedCard));
+        const mainDeck = new Deck(Save.getDecks()); //this isn't work cause on every click it's pulling the array from localStorage and not lowering the length.
+        console.log(displayedCard);
+        if (mainDeck.cards.length > 1){
+        console.log(mainDeck.cards.indexOf(displayedCard));
+        // Save.removeCard(mainDeck.cards.indexOf(displayedCard));
         discardDeck.cards.unshift(displayedCard);
         dealCard();
     } else {
@@ -196,7 +197,7 @@ function nextCardinDeck(){
 
 //select previous cards
 function prevCardinDeck(){
-    const mainDeck = Save.getDecks();
+    const mainDeck = new Deck(Save.getDecks());
     if (discardDeck.cards.length >= 1){
         displayedCard = discardDeck.cards[0];
         UIcardTxt.innerText = displayedCard.frontDesc;
