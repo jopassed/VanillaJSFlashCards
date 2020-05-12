@@ -1,5 +1,14 @@
 'use strict';
 
+//trial
+// document.addEventListener('mousemove', function(e){
+//     const blackdot = document.getElementById('black-dot');
+//     console.log(e.pageX);
+//     console.log(e.pageY);
+//     blackdot.style.left = `${e.pageX}px`;
+//     blackdot.style.top = `${e.pageY}px`;
+// });
+
 //Card Class Constructor
 class Card {
     constructor(frontDesc, backTerm){
