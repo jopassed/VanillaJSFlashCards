@@ -1,8 +1,5 @@
 'use strict';
 
-//Deck Class Constructor
-
-
 //Card Class Constructor
 class Card {
     constructor(frontDesc, backTerm){
@@ -10,6 +7,39 @@ class Card {
         this.backTerm = backTerm;
     }
 }
+
+class UI {
+    UIMessages(msg, color){
+        UImessage.style.color = color;
+        UImessage.innerText = msg;
+        setTimeout(() => {
+         UImessage.innerText = '';
+        }, 3000);
+    }
+
+    addCardtoList(card){
+        const li = document.createElement('li');
+        const ul = document.querySelector('.card-list')
+        li.innerHTML = `${card.backTerm}<a href="#" class="delete">X</a>`
+        ul.appendChild(li);
+    }
+
+}
+
+//instantiate ui
+const ui = new UI;
+
+//Card Data Objects
+let currentCard =[];
+
+//cards
+const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
+const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
+const card3 = new Card('stores something to fire later', 'function');
+
+//decks
+const mainDeck = [card1, card2, card3];
+const discardDeck = [];
 
 //ui elements
 const UIflashcard = document.querySelector('#flash-card');
@@ -39,8 +69,37 @@ UIprevBtn.addEventListener('click', prevCardinDeck);
 //form guesser event
 UIform.addEventListener('submit', cardGuesser);
 
-//decks tracker
-let prevCardTracker = [];
+//add card listener
+document.getElementById('card-form').addEventListener('submit', function(e){
+    //get form values
+    const term = document.getElementById('term').value,
+          description = document.getElementById('description').value;
+
+    // Instantiate a card
+    const card = new Card(description, term);
+
+    //Validate
+    if(term === '' || description === '') {
+        // Error alert
+        ui.UIMessages('Please add a card!', 'red');
+    } else{
+
+        ui.addCardtoList(card);
+        //add to LS
+
+        // Store.addBook(book);
+
+
+        ui.UIMessages('Card Added!', 'green');
+
+        //Clear Fields
+        document.getElementById('term').value = '';
+        document.getElementById('description').value = '';
+    }
+
+    e.preventDefault();
+});
+
 
 //load events
 function loadEvents(){
@@ -54,19 +113,6 @@ function setCardHeight(){
     let setHeight = cardWidth / 1.666666666667;
     UIflashcard.style.height = `${setHeight}px`;
 }
-
-//Card Data Objects
-let currentCard =[];
-
-
-//cards
-const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
-const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
-const card3 = new Card('stores something to fire later', 'function');
-
-//decks
-const mainDeck = [card1, card2, card3];
-const discardDeck = [];
 
 function dealCard(){
     let randomInt = Math.floor(Math.random() * (mainDeck.length));
@@ -92,7 +138,7 @@ function nextCardinDeck(){
         discardDeck.unshift(currentCard);
         dealCard();
     } else {
-        UIMessages('No More Cards...');
+        ui.UIMessages('No More Cards...', 'red');
     }
 }
 
@@ -104,23 +150,18 @@ function prevCardinDeck(){
         mainDeck.unshift(currentCard);        
         discardDeck.shift();
     } else {
-        UIMessages('No More Cards...');
+        ui.UIMessages('No More Cards...', 'red');
     }
 }
 
-function UIMessages(msg){
-    UImessage.innerText = msg;
-    setTimeout(() => {
-     UImessage.innerText = '';
-    }, 3000);
-}
+
 
 function cardGuesser(e){
     e.preventDefault();
     if (UIguessInput.value === currentCard.backTerm){
-        UIMessages('Correct!');
+        ui.UIMessages('Correct!', 'green');
         UIcardTxt.innerText = currentCard.backTerm;
     } else {
-        UIMessages('Incorrect!');
+        ui.UIMessages('Incorrect!', 'red');
     }
 }
