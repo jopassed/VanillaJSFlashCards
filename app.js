@@ -17,11 +17,58 @@ class UI {
         }, 3000);
     }
 
-    addCardtoList(card){
+    addCard(card, deckClass){
         const li = document.createElement('li');
-        const ul = document.querySelector('.card-list')
+        const ul = document.querySelector(deckClass)
         li.innerHTML = `${card.backTerm}<a href="#" class="delete">X</a>`
         ul.appendChild(li);
+    }
+
+}
+
+class Store {
+    static getMainDeck() {
+        let mainDeck;
+        if (localStorage.getItem('mainDeck') === null) {
+        mainDeck = [];
+        } else {
+            mainDeck = JSON.parse(localStorage.getItem('mainDeck'));
+        }
+
+        return mainDeck;
+    }
+
+    static getStorageDeck() {
+        let storeDeck;
+        if (localStorage.getItem('storeDeck') === null) {
+            storeDeck = [];
+        } else {
+            storeDeck = JSON.parse(localStorage.getItem('storeDeck'));
+        }
+
+        return storeDeck;
+    }
+
+    static addCards(card) {
+        let storeDeck = Store.getStorageDeck();
+        storeDeck.push(card);
+        localStorage.setItem('storeDeck', JSON.stringify(storeDeck));
+
+    }
+
+    static displayCards() {
+        let storeDeck = Store.getStorageDeck();
+        storeDeck.forEach(function(card){
+            ui.addCard(card, '.card-list');
+        });
+    }
+
+
+    static displayMainDeck() {
+        let mainDeck = Store.getMainDeck();
+        mainDeck.forEach(function(card){
+            ui.addCard(card, '.main-deck-list');
+        });
     }
 
 }
@@ -38,7 +85,7 @@ const card2 = new Card('a way of storing datatypes such as strings, integers, wi
 const card3 = new Card('stores something to fire later', 'function');
 
 //decks
-const mainDeck = [card1, card2, card3];
+// const mainDeck = [card1, card2, card3];
 const discardDeck = [];
 
 //ui elements
@@ -83,12 +130,10 @@ document.getElementById('card-form').addEventListener('submit', function(e){
         // Error alert
         ui.UIMessages('Please add a card!', 'red');
     } else{
-
-        ui.addCardtoList(card);
+        ui.addCard(card);
         //add to LS
-
+        Store.addCards(card);
         // Store.addBook(book);
-
 
         ui.UIMessages('Card Added!', 'green');
 
@@ -103,6 +148,8 @@ document.getElementById('card-form').addEventListener('submit', function(e){
 
 //load events
 function loadEvents(){
+    Store.displayMainDeck();
+    Store.displayCards();
     setCardHeight();
     dealCard();
 }
@@ -115,9 +162,12 @@ function setCardHeight(){
 }
 
 function dealCard(){
+    let mainDeck = Store.getMainDeck();
     let randomInt = Math.floor(Math.random() * (mainDeck.length));
     currentCard = mainDeck[randomInt];
+    if (currentCard != undefined) {
     UIcardTxt.innerText = currentCard.frontDesc;
+    }
 }
 
 //flip current card
@@ -133,6 +183,7 @@ function flipCard(e){
 
 //select next card
 function nextCardinDeck(){
+    let mainDeck = Store.getMainDeck();
     if (mainDeck.length > 1){
         mainDeck.splice(mainDeck.indexOf(currentCard), 1);
         discardDeck.unshift(currentCard);
@@ -144,6 +195,7 @@ function nextCardinDeck(){
 
 //select previous cards
 function prevCardinDeck(){
+    let mainDeck = Store.getMainDeck();
     if (discardDeck.length >= 1){
         currentCard = discardDeck[0];
         UIcardTxt.innerText = currentCard.frontDesc;
