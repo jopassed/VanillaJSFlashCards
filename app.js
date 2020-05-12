@@ -1,17 +1,7 @@
 'use strict';
 
 //Deck Class Constructor
-class Deck {
-    constructor(cards){
-        this.cards = cards;
-        }
-    //shuffle cards - I'm just creating a random int based on the number of cards rather than actually changing the array...
-    shuffle(){
-        let randomInt = Math.floor(Math.random() * (this.cards.length));
-        return randomInt;
-    }
 
-}
 
 //Card Class Constructor
 class Card {
@@ -75,11 +65,12 @@ const card2 = new Card('a way of storing datatypes such as strings, integers, wi
 const card3 = new Card('stores something to fire later', 'function');
 
 //decks
-const mainDeck = new Deck([card1,card2, card3]);
-const discardDeck = new Deck([]);
+const mainDeck = [card1, card2, card3];
+const discardDeck = [];
 
 function dealCard(){
-    currentCard = mainDeck.cards[mainDeck.shuffle()];
+    let randomInt = Math.floor(Math.random() * (mainDeck.length));
+    currentCard = mainDeck[randomInt];
     UIcardTxt.innerText = currentCard.frontDesc;
 }
 
@@ -96,9 +87,9 @@ function flipCard(e){
 
 //select next card
 function nextCardinDeck(){
-    if (mainDeck.cards.length > 1){
-        mainDeck.cards.splice(mainDeck.cards.indexOf(currentCard), 1);
-        discardDeck.cards.unshift(currentCard);
+    if (mainDeck.length > 1){
+        mainDeck.splice(mainDeck.indexOf(currentCard), 1);
+        discardDeck.unshift(currentCard);
         dealCard();
     } else {
         UIMessages('No More Cards...');
@@ -107,11 +98,11 @@ function nextCardinDeck(){
 
 //select previous cards
 function prevCardinDeck(){
-    if (discardDeck.cards.length >= 1){
-        currentCard = discardDeck.cards[0];
+    if (discardDeck.length >= 1){
+        currentCard = discardDeck[0];
         UIcardTxt.innerText = currentCard.frontDesc;
-        mainDeck.cards.unshift(currentCard);        
-        discardDeck.cards.shift();
+        mainDeck.unshift(currentCard);        
+        discardDeck.shift();
     } else {
         UIMessages('No More Cards...');
     }
