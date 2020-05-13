@@ -39,25 +39,11 @@ class Deck {
 
 //Card Class Constructor
 class Card {
-    constructor(frontDesc, backTerm, faceUp = true){
+    constructor(frontDesc, backTerm, descUp = true){
         this.frontDesc = frontDesc;
         this.backTerm = backTerm;
-        this.faceUp = faceUp;
-    }
-
-    FlipCard(){
-        if (this.faceUp === true) {
-            this.faceUp = false;
-        } else{
-            this.faceUp = true;
-        }
     }
 }
-
-//cards
-const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
-const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
-const card3 = new Card('stores something to fire later', 'function');
 
 
 class UI {
@@ -76,15 +62,23 @@ class UI {
         li.innerHTML = `${card.backTerm}<a href="#" class="delete">X</a>`
         ul.appendChild(li);
     }
+
     dealCard(card){
         let mainDeck = Store.getMainDeck();
-        //check bool if face up.
-        if (mainDeck.cards[card].faceUp){
-            UIcardTxt.innerText = mainDeck.cards[card].frontDesc;
-        } else {
-            UIcardTxt.innerText = mainDeck.cards[card].backTerm;
-        }
+        UIcardTxt.innerText = mainDeck.cards[card].frontDesc;
     }
+
+    flipCard(e){
+    let currentCardIndex = Store.findDisplayedCard();
+    let mainDeck = Store.getMainDeck();
+    let currentTxt = UIcardTxt.innerText;
+    if(currentTxt === mainDeck.cards[currentCardIndex].frontDesc){
+      UIcardTxt.innerText = mainDeck.cards[currentCardIndex].backTerm;
+    } else {
+      UIcardTxt.innerText = mainDeck.cards[currentCardIndex].frontDesc;
+    }
+  
+  }
 
 }
 
@@ -146,6 +140,16 @@ class Store {
     }
 
 }
+//i'm working towards eliminating this but i'm using this for now to test my flip card function. 
+//cards
+const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
+const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
+const card3 = new Card('stores something to fire later', 'function');
+//temporary - delete
+const mainDeck = new Deck;
+mainDeck.cards = [card1, card2, card3];
+localStorage.setItem('mainDeck', JSON.stringify(mainDeck.cards));
+
 
 //instantiate ui
 const ui = new UI;
@@ -161,8 +165,8 @@ window.addEventListener('load', loadEvents);
 window.addEventListener('resize', setCardHeight);
 
 //click events
-UIflashcard.addEventListener('mousedown', flipCard);
-UIflashcard.addEventListener('mouseup', flipCard);
+UIflashcard.addEventListener('mousedown', ui.flipCard);
+UIflashcard.addEventListener('mouseup', ui.flipCard);
 UIshuffleBtn.addEventListener('click', ui.dealCard);
 UInextBtn.addEventListener('click', nextCardinDeck);
 UIprevBtn.addEventListener('click', prevCardinDeck);
@@ -206,7 +210,7 @@ function loadEvents(){
     Store.displayCards();
     setCardHeight();
     let mainDeck = Store.getMainDeck();
-    ui.dealCard(mainDeck.shuffle());
+    ui.dealCard(mainDeck.shuffle(), true);
 }
 
 //set card height responsively to width
@@ -216,11 +220,6 @@ function setCardHeight(){
     UIflashcard.style.height = `${setHeight}px`;
 }
 
-//flip current card - this needs to be a method of the Card class... I think that'd be dope!
-function flipCard(e){
-    e.preventDefault();
-
-}
 
 //select next card
 function nextCardinDeck(){
