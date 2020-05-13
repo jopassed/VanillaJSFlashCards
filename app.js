@@ -11,6 +11,20 @@
 //     blackdot.style.top = `${e.pageY}px`;
 // });
 
+//ui elements
+const UIflashcard = document.querySelector('#flash-card');
+const UInextBtn = document.querySelector('#next');
+const UIprevBtn = document.querySelector('#previous');
+const UIshuffleBtn = document.querySelector('#shuffle');
+
+//UI feedback
+const UImessage = document.querySelector('.message');
+const UIcardTxt = document.querySelector('#flash-card-txt');
+
+//guess form UI
+const UIform = document.querySelector('#guess-form');
+const UIguessInput = document.querySelector('#guess-card');
+
 //Card Class Constructor
 class Card {
     constructor(frontDesc, backTerm){
@@ -18,6 +32,11 @@ class Card {
         this.backTerm = backTerm;
     }
 }
+
+//cards
+const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
+const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
+const card3 = new Card('stores something to fire later', 'function');
 
 class UI {
     UIMessages(msg, color){
@@ -33,6 +52,14 @@ class UI {
         const ul = document.querySelector(deckClass)
         li.innerHTML = `${card.backTerm}<a href="#" class="delete">X</a>`
         ul.appendChild(li);
+    }
+    dealCard(){
+        let mainDeck = Store.getMainDeck();
+        let randomInt = Math.floor(Math.random() * (mainDeck.length));
+        currentCard = mainDeck[randomInt];
+        if (currentCard != undefined) {
+        UIcardTxt.innerText = currentCard.frontDesc;
+        }
     }
 
 }
@@ -87,31 +114,11 @@ class Store {
 //instantiate ui
 const ui = new UI;
 
+//decks
 //Card Data Objects
 let currentCard =[];
-
-//cards
-const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
-const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
-const card3 = new Card('stores something to fire later', 'function');
-
-//decks
 // const mainDeck = [card1, card2, card3];
 const discardDeck = [];
-
-//ui elements
-const UIflashcard = document.querySelector('#flash-card');
-const UInextBtn = document.querySelector('#next');
-const UIprevBtn = document.querySelector('#previous');
-const UIshuffleBtn = document.querySelector('#shuffle');
-
-//UI feedback
-const UImessage = document.querySelector('.message');
-const UIcardTxt = document.querySelector('#flash-card-txt');
-
-//guess form UI
-const UIform = document.querySelector('#guess-form');
-const UIguessInput = document.querySelector('#guess-card');
 
 //responsive event listeners
 window.addEventListener('load', loadEvents);
@@ -120,7 +127,7 @@ window.addEventListener('resize', setCardHeight);
 //click events
 UIflashcard.addEventListener('mousedown', flipCard);
 UIflashcard.addEventListener('mouseup', flipCard);
-UIshuffleBtn.addEventListener('click', dealCard);
+UIshuffleBtn.addEventListener('click', ui.dealCard);
 UInextBtn.addEventListener('click', nextCardinDeck);
 UIprevBtn.addEventListener('click', prevCardinDeck);
 
@@ -162,7 +169,7 @@ function loadEvents(){
     Store.displayMainDeck();
     Store.displayCards();
     setCardHeight();
-    dealCard();
+    ui.dealCard();
 }
 
 //set card height responsively to width
@@ -170,15 +177,6 @@ function setCardHeight(){
     let cardWidth = UIflashcard.offsetWidth;
     let setHeight = cardWidth / 1.666666666667;
     UIflashcard.style.height = `${setHeight}px`;
-}
-
-function dealCard(){
-    let mainDeck = Store.getMainDeck();
-    let randomInt = Math.floor(Math.random() * (mainDeck.length));
-    currentCard = mainDeck[randomInt];
-    if (currentCard != undefined) {
-    UIcardTxt.innerText = currentCard.frontDesc;
-    }
 }
 
 //flip current card
