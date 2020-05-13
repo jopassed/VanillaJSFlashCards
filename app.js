@@ -18,12 +18,24 @@ const UIprevBtn = document.querySelector('#previous');
 const UIshuffleBtn = document.querySelector('#shuffle');
 
 //UI feedback
-const UImessage = document.querySelector('.message');
 const UIcardTxt = document.querySelector('#flash-card-txt');
 
 //guess form UI
-const UIform = document.querySelector('#guess-form');
+
 const UIguessInput = document.querySelector('#guess-card');
+
+//Deck Class Constructor
+class Deck {
+    constructor(cards){
+        this.cards = cards;
+        }
+    //shuffle cards - I'm just creating a random int based on the number of cards rather than actually changing the array...
+    shuffle(){
+        let randomInt = Math.floor(Math.random() * (this.cards.length));
+        return randomInt;
+    }
+
+}
 
 //Card Class Constructor
 class Card {
@@ -40,6 +52,7 @@ const card3 = new Card('stores something to fire later', 'function');
 
 class UI {
     UIMessages(msg, color){
+        const UImessage = document.querySelector('.message');
         UImessage.style.color = color;
         UImessage.innerText = msg;
         setTimeout(() => {
@@ -132,7 +145,7 @@ UInextBtn.addEventListener('click', nextCardinDeck);
 UIprevBtn.addEventListener('click', prevCardinDeck);
 
 //form guesser event
-UIform.addEventListener('submit', cardGuesser);
+document.querySelector('#guess-form').addEventListener('submit', cardGuesser);
 
 //add card listener
 document.getElementById('card-form').addEventListener('submit', function(e){
