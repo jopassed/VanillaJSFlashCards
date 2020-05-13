@@ -39,9 +39,18 @@ class Deck {
 
 //Card Class Constructor
 class Card {
-    constructor(frontDesc, backTerm){
+    constructor(frontDesc, backTerm, faceUp = true){
         this.frontDesc = frontDesc;
         this.backTerm = backTerm;
+        this.faceUp = faceUp;
+    }
+
+    FlipCard(){
+        if (this.faceUp === true) {
+            this.faceUp = false;
+        } else{
+            this.faceUp = true;
+        }
     }
 }
 
@@ -49,6 +58,7 @@ class Card {
 const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
 const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
 const card3 = new Card('stores something to fire later', 'function');
+
 
 class UI {
     UIMessages(msg, color){
@@ -66,12 +76,13 @@ class UI {
         li.innerHTML = `${card.backTerm}<a href="#" class="delete">X</a>`
         ul.appendChild(li);
     }
-    dealCard(){
+    dealCard(card){
         let mainDeck = Store.getMainDeck();
-        let randomInt = Math.floor(Math.random() * (mainDeck.length));
-        currentCard = mainDeck[randomInt];
-        if (currentCard != undefined) {
-        UIcardTxt.innerText = currentCard.frontDesc;
+        //check bool if face up.
+        if (mainDeck.cards[card].faceUp){
+            UIcardTxt.innerText = mainDeck.cards[card].frontDesc;
+        } else {
+            UIcardTxt.innerText = mainDeck.cards[card].backTerm;
         }
     }
 
@@ -79,47 +90,59 @@ class UI {
 
 class Store {
     static getMainDeck() {
-        let mainDeck;
+        const mainDeck = new Deck;
         if (localStorage.getItem('mainDeck') === null) {
-        mainDeck = [];
+        mainDeck.cards = [];
         } else {
-            mainDeck = JSON.parse(localStorage.getItem('mainDeck'));
+            mainDeck.cards = JSON.parse(localStorage.getItem('mainDeck'));
         }
-
+      
         return mainDeck;
     }
 
     static getStorageDeck() {
-        let storeDeck;
+        const storeDeck = new Deck;
         if (localStorage.getItem('storeDeck') === null) {
-            storeDeck = [];
+            storeDeck.cards = [];
         } else {
-            storeDeck = JSON.parse(localStorage.getItem('storeDeck'));
+            storeDeck.cards = JSON.parse(localStorage.getItem('storeDeck'));
         }
-
+     
         return storeDeck;
     }
 
-    static addCards(card) {
-        let storeDeck = Store.getStorageDeck();
-        storeDeck.push(card);
-        localStorage.setItem('storeDeck', JSON.stringify(storeDeck));
+    static addCards(card) 
+    {   let storeDeck = Store.getStorageDeck();
+        storeDeck.cards.push(card);
+        localStorage.setItem('storeDeck', JSON.stringify(storeDeck.cards));
 
     }
 
     static displayCards() {
         let storeDeck = Store.getStorageDeck();
-        storeDeck.forEach(function(card){
+        storeDeck.cards.forEach(function(card){
             ui.addCard(card, '.card-list');
         });
     }
 
-
     static displayMainDeck() {
-        let mainDeck = Store.getMainDeck();
-        mainDeck.forEach(function(card){
+        const mainDeck = Store.getMainDeck();
+        mainDeck.cards.forEach(function(card){
             ui.addCard(card, '.main-deck-list');
         });
+    }
+
+    static findDisplayedCard() {
+        let cardIndex;
+        const mainDeck = Store.getMainDeck();
+        mainDeck.cards.forEach(function(card, index){
+            if (card.frontDesc === UIcardTxt.innerText){
+                cardIndex = index;
+            } else if(card.backTerm === UIcardTxt.innerText){
+                cardIndex = index;
+            }
+            });
+    return cardIndex;
     }
 
 }
@@ -129,7 +152,7 @@ const ui = new UI;
 
 //decks
 //Card Data Objects
-let currentCard =[];
+
 // const mainDeck = [card1, card2, card3];
 const discardDeck = [];
 
@@ -161,7 +184,7 @@ document.getElementById('card-form').addEventListener('submit', function(e){
         // Error alert
         ui.UIMessages('Please add a card!', 'red');
     } else{
-        ui.addCard(card);
+        ui.addCard(card,'.card-list');
         //add to LS
         Store.addCards(card);
         // Store.addBook(book);
@@ -182,7 +205,8 @@ function loadEvents(){
     Store.displayMainDeck();
     Store.displayCards();
     setCardHeight();
-    ui.dealCard();
+    let mainDeck = Store.getMainDeck();
+    ui.dealCard(mainDeck.shuffle());
 }
 
 //set card height responsively to width
@@ -192,15 +216,10 @@ function setCardHeight(){
     UIflashcard.style.height = `${setHeight}px`;
 }
 
-//flip current card
+//flip current card - this needs to be a method of the Card class... I think that'd be dope!
 function flipCard(e){
     e.preventDefault();
-    let currentTxt = UIcardTxt.innerText;
-    if(currentTxt === currentCard.frontDesc){
-        UIcardTxt.innerText = currentCard.backTerm;
-    } else {
-        UIcardTxt.innerText = currentCard.frontDesc;
-    }
+
 }
 
 //select next card
