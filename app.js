@@ -1,3 +1,5 @@
+//procedural program with a little bit of classes.
+
 'use strict';
 
 //trial
