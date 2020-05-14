@@ -1,15 +1,6 @@
-//procedural program with a little bit of classes.
+//OOP es6 classes. no global scope variables...
 
 'use strict';
-
-//trial
-// document.addEventListener('mousemove', function(e){
-//     const blackdot = document.getElementById('black-dot');
-//     console.log(e.pageX);
-//     console.log(e.pageY);
-//     blackdot.style.left = `${e.pageX}px`;
-//     blackdot.style.top = `${e.pageY}px`;
-// });
 
 //Deck Class Constructor
 class Deck {
@@ -298,7 +289,6 @@ document.querySelector('.main-deck-list').addEventListener('click', (e) => {
     if(e.target.className === 'delete fa fa-times'){
     Store.mainToStorageDeck(e.target.parentElement.parentElement.textContent); 
     }
-  
     e.preventDefault();
 });
 
@@ -316,5 +306,26 @@ function loadEvents(){
     ui.dealCard();
 }
 
+let isClicked = false;
 
+document.addEventListener('mousedown', function(e) {
+    if (e.target === document.getElementById('black-dot')){
+        isClicked = true;
+        console.log(isClicked);
+}
+});
+document.addEventListener('mouseup', function(e){
+    if (e.target === document.getElementById('black-dot')){
+        isClicked = false;
+        console.log(isClicked);
+}
+});
+// trial
+document.addEventListener('mousemove', function(e){
+    if (isClicked){
+    const blackdot = document.getElementById('black-dot');
+    blackdot.style.left = `${e.pageX}px`;
+    blackdot.style.top = `${e.pageY - window.scrollY}px`;
+    }
+});
 
