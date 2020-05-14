@@ -11,19 +11,6 @@
 //     blackdot.style.top = `${e.pageY}px`;
 // });
 
-//ui elements
-const UIflashcard = document.querySelector('#flash-card');
-const UInextBtn = document.querySelector('#next');
-const UIprevBtn = document.querySelector('#previous');
-const UIshuffleBtn = document.querySelector('#shuffle');
-
-//UI feedback
-const UIcardTxt = document.querySelector('#flash-card-txt');
-
-//guess form UI
-
-const UIguessInput = document.querySelector('#guess-card');
-
 //Deck Class Constructor
 class Deck {
     constructor(cards){
@@ -39,14 +26,14 @@ class Deck {
 
 //Card Class Constructor
 class Card {
-    constructor(frontDesc, backTerm, descUp = true){
+    constructor(frontDesc, backTerm){
         this.frontDesc = frontDesc;
         this.backTerm = backTerm;
     }
 }
 
-
 class UI {
+
     UIMessages(msg, color){
         const UImessage = document.querySelector('.message');
         UImessage.style.color = color;
@@ -59,19 +46,42 @@ class UI {
     addCard(card, deckClass){
         const li = document.createElement('li');
         const ul = document.querySelector(deckClass)
-        li.innerHTML = `${card.backTerm}<a href="#" class="delete">X</a>`
+        li.innerHTML = `${card.backTerm}<a href="#"><i class="delete fa fa-times"></i></a>`
         ul.appendChild(li);
     }
 
-    dealCard(card){
-        let mainDeck = Store.getMainDeck();
-        UIcardTxt.innerText = mainDeck.cards[card].frontDesc;
+    cardGuesser(e){
+        const UIcardTxt = document.querySelector('#flash-card-txt'),
+              UIguessInput = document.querySelector('#guess-card'),
+              mainDeck = Store.getMainDeck(),
+              currentCard = mainDeck.cards[ui.findDisplayedCard(mainDeck)];
+        console.log(currentCard);
+        if (UIguessInput.value === currentCard.backTerm){
+            ui.UIMessages('Correct!', 'green');
+            UIcardTxt.innerText = currentCard.backTerm;
+        } else {
+            ui.UIMessages('Incorrect!', 'red');
+        }
+        e.preventDefault();
+    }
+
+    dealCard(){
+        const mainDeck = Store.getMainDeck(),
+             UIcardTxt = document.querySelector('#flash-card-txt');
+        UIcardTxt.innerText = mainDeck.cards[mainDeck.shuffle()].frontDesc;
+    }
+
+    deleteCard(target){
+        if(target.className === 'delete fa fa-times'){
+            target.parentElement.parentElement.remove();         
+        }
     }
 
     flipCard(e){
-    let currentCardIndex = Store.findDisplayedCard();
-    let mainDeck = Store.getMainDeck();
-    let currentTxt = UIcardTxt.innerText;
+    const UIcardTxt = document.querySelector('#flash-card-txt'),
+          mainDeck = Store.getMainDeck(),
+          currentCardIndex = ui.findDisplayedCard(mainDeck),
+          currentTxt = UIcardTxt.innerText;
     if(currentTxt === mainDeck.cards[currentCardIndex].frontDesc){
       UIcardTxt.innerText = mainDeck.cards[currentCardIndex].backTerm;
     } else {
@@ -79,6 +89,82 @@ class UI {
     }
   
   }
+
+  findDisplayedCard(deck) {
+    const UIcardTxt = document.querySelector('#flash-card-txt');
+    let cardIndex;
+    deck.cards.forEach(function(card, index){
+        if (card.frontDesc === UIcardTxt.innerText){
+            cardIndex = index;
+        } else if(card.backTerm === UIcardTxt.innerText){
+            cardIndex = index;
+        }
+        }); 
+        return cardIndex;
+    }
+
+        //get form values
+    getAddCardForm(e){
+        const term = document.getElementById('term').value,
+        description = document.getElementById('description').value;
+        // Instantiate a card
+        const card = new Card(description, term);
+        //Validate
+        if(term === '' || description === '') {
+        // Error alert
+        ui.UIMessages('Please add a card!', 'red');
+        } else{
+        ui.addCard(card,'.card-list');
+        //add to LS
+        Store.addCardsToStorage(card);
+        // tell me the card is added
+        ui.UIMessages('Card Added!', 'green');
+        // Clear Fields
+        document.getElementById('term').value = '';
+        document.getElementById('description').value = '';
+        }
+        e.preventDefault();
+    }
+
+    //select next card from main Deck
+         nextCardinDeck(){
+    const mainDeck = Store.getMainDeck(),
+          discardDeck = Store.getDiscardDeck(),
+          currentCard = mainDeck.cards[ui.findDisplayedCard(mainDeck)];
+    if (mainDeck.cards.length > 1){  
+        mainDeck.cards.splice(ui.findDisplayedCard(mainDeck), 1);
+        discardDeck.cards.unshift(currentCard);
+        Store.addDeckToStorage('mainDeck', mainDeck);
+        Store.addDeckToStorage('discardDeck', discardDeck);
+        ui.dealCard();
+    } else {
+        ui.UIMessages('No More Cards...', 'red');
+    }
+}
+
+    //select previous cards
+        prevCardinDeck(){
+    const UIcardTxt = document.querySelector('#flash-card-txt'),        
+          mainDeck = Store.getMainDeck(),
+          discardDeck = Store.getDiscardDeck();
+    if (discardDeck.cards.length >= 1){
+        let currentCard = discardDeck.cards[0];
+        UIcardTxt.innerText = currentCard.frontDesc;
+        mainDeck.cards.unshift(currentCard);        
+        discardDeck.cards.shift();
+        Store.addDeckToStorage('mainDeck', mainDeck);
+        Store.addDeckToStorage('discardDeck', discardDeck);
+    } else {
+        ui.UIMessages('No More Cards...', 'red');
+    }
+}
+  //set card height responsively to width
+  setCardHeight(){
+    const UIflashcard = document.querySelector('#flash-card');
+    let cardWidth = UIflashcard.offsetWidth;
+    let setHeight = cardWidth / 1.666666666667;
+    UIflashcard.style.height = `${setHeight}px`;
+}
 
 }
 
@@ -105,11 +191,59 @@ class Store {
         return storeDeck;
     }
 
-    static addCards(card) 
+    static getDiscardDeck() {
+        const discardDeck = new Deck;
+        if (localStorage.getItem('discardDeck') === null) {
+            discardDeck.cards = [];
+        } else {
+            discardDeck.cards = JSON.parse(localStorage.getItem('discardDeck'));
+        }
+
+        return discardDeck;
+    }
+
+    static discardCards(card) 
+    {   let discardDeck = Store.getDiscardDeck();
+        discardDeck.cards.push(card);
+        Store.addDeckToStorage('discardDeck', discardDeck);
+
+    }
+
+    static deleteFromList(term) {
+        const storeDeck = Store.getStorageDeck();
+
+        storeDeck.cards.forEach(function(card, index){
+            if(card.backTerm === term) {
+                storeDeck.cards.splice(index, 1);
+            }
+        });
+        Store.addDeckToStorage('storeDeck', storeDeck);
+    }
+
+    static mainToStorageDeck(term) {
+        const mainDeck = Store.getMainDeck();
+        const storeDeck = Store.getStorageDeck();
+
+        mainDeck.cards.forEach(function(card, index){
+            if(card.backTerm === term) {
+                storeDeck.cards.push(card);
+                mainDeck.cards.splice(index, 1);
+                ui.addCard(card, '.card-list');
+            }
+        });
+        Store.addDeckToStorage('mainDeck', mainDeck);
+        Store.addDeckToStorage('storeDeck', storeDeck);
+    }
+
+    static addCardsToStorage(card) 
     {   let storeDeck = Store.getStorageDeck();
         storeDeck.cards.push(card);
-        localStorage.setItem('storeDeck', JSON.stringify(storeDeck.cards));
+        Store.addDeckToStorage('storeDeck', storeDeck);
 
+    }
+
+    static addDeckToStorage(storeName, deck){
+        localStorage.setItem(storeName, JSON.stringify(deck.cards));
     }
 
     static displayCards() {
@@ -126,19 +260,6 @@ class Store {
         });
     }
 
-    static findDisplayedCard() {
-        let cardIndex;
-        const mainDeck = Store.getMainDeck();
-        mainDeck.cards.forEach(function(card, index){
-            if (card.frontDesc === UIcardTxt.innerText){
-                cardIndex = index;
-            } else if(card.backTerm === UIcardTxt.innerText){
-                cardIndex = index;
-            }
-            });
-    return cardIndex;
-    }
-
 }
 //i'm working towards eliminating this but i'm using this for now to test my flip card function. 
 //cards
@@ -146,114 +267,54 @@ const card1 = new Card('a way of storing datatypes such as strings, integers, wi
 const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
 const card3 = new Card('stores something to fire later', 'function');
 //temporary - delete
-const mainDeck = new Deck;
-mainDeck.cards = [card1, card2, card3];
-localStorage.setItem('mainDeck', JSON.stringify(mainDeck.cards));
-
+const tempDeck = new Deck;
+tempDeck.cards = [card1, card2, card3];
+localStorage.setItem('mainDeck', JSON.stringify(tempDeck.cards));
 
 //instantiate ui
 const ui = new UI;
 
-//decks
-//Card Data Objects
-
-// const mainDeck = [card1, card2, card3];
-const discardDeck = [];
-
 //responsive event listeners
 window.addEventListener('load', loadEvents);
-window.addEventListener('resize', setCardHeight);
+window.addEventListener('resize', ui.setCardHeight);
 
 //click events
-UIflashcard.addEventListener('mousedown', ui.flipCard);
-UIflashcard.addEventListener('mouseup', ui.flipCard);
-UIshuffleBtn.addEventListener('click', ui.dealCard);
-UInextBtn.addEventListener('click', nextCardinDeck);
-UIprevBtn.addEventListener('click', prevCardinDeck);
-
-//form guesser event
-document.querySelector('#guess-form').addEventListener('submit', cardGuesser);
-
-//add card listener
-document.getElementById('card-form').addEventListener('submit', function(e){
-    //get form values
-    const term = document.getElementById('term').value,
-          description = document.getElementById('description').value;
-
-    // Instantiate a card
-    const card = new Card(description, term);
-
-    //Validate
-    if(term === '' || description === '') {
-        // Error alert
-        ui.UIMessages('Please add a card!', 'red');
-    } else{
-        ui.addCard(card,'.card-list');
-        //add to LS
-        Store.addCards(card);
-        // Store.addBook(book);
-
-        ui.UIMessages('Card Added!', 'green');
-
-        //Clear Fields
-        document.getElementById('term').value = '';
-        document.getElementById('description').value = '';
+document.querySelector('#flash-card').addEventListener('mousedown', ui.flipCard);
+document.querySelector('#flash-card').addEventListener('mouseup', ui.flipCard);
+document.querySelector('#shuffle').addEventListener('click', ui.dealCard);
+document.querySelector('#next').addEventListener('click', ui.nextCardinDeck);
+document.querySelector('#previous').addEventListener('click', ui.prevCardinDeck);
+document.querySelector('.card-list').addEventListener('click', (e) => {
+    ui.deleteCard(e.target);
+    if(e.target.className === 'delete fa fa-times'){
+    Store.deleteFromList(e.target.parentElement.parentElement.textContent);
     }
-
+  
     e.preventDefault();
 });
 
+document.querySelector('.main-deck-list').addEventListener('click', (e) => {
+    ui.deleteCard(e.target);
+    if(e.target.className === 'delete fa fa-times'){
+    Store.mainToStorageDeck(e.target.parentElement.parentElement.textContent); 
+    }
+  
+    e.preventDefault();
+});
+
+//form guesser event
+document.querySelector('#guess-form').addEventListener('submit', ui.cardGuesser);
+
+//add card listener
+document.getElementById('card-form').addEventListener('submit', ui.getAddCardForm);
 
 //load events
 function loadEvents(){
     Store.displayMainDeck();
     Store.displayCards();
-    setCardHeight();
-    let mainDeck = Store.getMainDeck();
-    ui.dealCard(mainDeck.shuffle(), true);
-}
-
-//set card height responsively to width
-function setCardHeight(){
-    let cardWidth = UIflashcard.offsetWidth;
-    let setHeight = cardWidth / 1.666666666667;
-    UIflashcard.style.height = `${setHeight}px`;
-}
-
-
-//select next card
-function nextCardinDeck(){
-    let mainDeck = Store.getMainDeck();
-    if (mainDeck.length > 1){
-        mainDeck.splice(mainDeck.indexOf(currentCard), 1);
-        discardDeck.unshift(currentCard);
-        dealCard();
-    } else {
-        ui.UIMessages('No More Cards...', 'red');
-    }
-}
-
-//select previous cards
-function prevCardinDeck(){
-    let mainDeck = Store.getMainDeck();
-    if (discardDeck.length >= 1){
-        currentCard = discardDeck[0];
-        UIcardTxt.innerText = currentCard.frontDesc;
-        mainDeck.unshift(currentCard);        
-        discardDeck.shift();
-    } else {
-        ui.UIMessages('No More Cards...', 'red');
-    }
+    ui.setCardHeight();
+    ui.dealCard();
 }
 
 
 
-function cardGuesser(e){
-    e.preventDefault();
-    if (UIguessInput.value === currentCard.backTerm){
-        ui.UIMessages('Correct!', 'green');
-        UIcardTxt.innerText = currentCard.backTerm;
-    } else {
-        ui.UIMessages('Incorrect!', 'red');
-    }
-}
