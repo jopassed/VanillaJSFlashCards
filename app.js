@@ -36,8 +36,9 @@ class UI {
 
     addCard(card, deckClass){
         const li = document.createElement('li');
+        li.className = 'store-card';
         const ul = document.querySelector(deckClass)
-        li.innerHTML = `${card.backTerm}<a href="#"><i class="delete fa fa-times"></i></a>`
+        li.innerHTML = `${card.backTerm}<a href="#"><i class="edit fa fa-pencil"><i class="delete fa fa-times"></i></a>`
         ul.appendChild(li);
     }
 
@@ -226,6 +227,21 @@ class Store {
         Store.addDeckToStorage('storeDeck', storeDeck);
     }
 
+    static storeToMainDeck(term) {
+        const mainDeck = Store.getMainDeck();
+        const storeDeck = Store.getStorageDeck();
+
+        storeDeck.cards.forEach(function(card, index){
+            if(card.backTerm === term) {
+                mainDeck.cards.push(card);
+                storeDeck.cards.splice(index, 1);
+                ui.addCard(card, '.card-list');
+            }
+        });
+        Store.addDeckToStorage('mainDeck', mainDeck);
+        Store.addDeckToStorage('storeDeck', storeDeck);
+    }
+
     static addCardsToStorage(card) 
     {   let storeDeck = Store.getStorageDeck();
         storeDeck.cards.push(card);
@@ -252,15 +268,6 @@ class Store {
     }
 
 }
-//i'm working towards eliminating this but i'm using this for now to test my flip card function. 
-//cards
-const card1 = new Card('a way of storing datatypes such as strings, integers, with block scope and can be reassigned.', 'let');
-const card2 = new Card('a way of storing datatypes such as strings, integers, with block scope and cannot be reassigned.', 'const');
-const card3 = new Card('stores something to fire later', 'function');
-//temporary - delete
-const tempDeck = new Deck;
-tempDeck.cards = [card1, card2, card3];
-localStorage.setItem('mainDeck', JSON.stringify(tempDeck.cards));
 
 //instantiate ui
 const ui = new UI;
@@ -306,26 +313,45 @@ function loadEvents(){
     ui.dealCard();
 }
 
-let isClicked = false;
 
-document.addEventListener('mousedown', function(e) {
-    if (e.target === document.getElementById('black-dot')){
-        isClicked = true;
-        console.log(isClicked);
-}
-});
-document.addEventListener('mouseup', function(e){
-    if (e.target === document.getElementById('black-dot')){
-        isClicked = false;
-        console.log(isClicked);
-}
-});
-// trial
-document.addEventListener('mousemove', function(e){
-    if (isClicked){
-    const blackdot = document.getElementById('black-dot');
-    blackdot.style.left = `${e.pageX}px`;
-    blackdot.style.top = `${e.pageY - window.scrollY}px`;
-    }
-});
+//drag cards from storage deck to main deck. consider making this a button instead next time you work on it.
+// let isClicked = false;
+
+// document.querySelector('.card-list').addEventListener('mousedown', function(e) {
+        
+//     if (e.target.className === 'store-card'){
+//         e.target.setAttribute('id', 'clicked-card');   
+//         isClicked = true;
+//      }
+// });
+// document.addEventListener('mouseup', function(e){
+
+//     if (e.target.className === 'store-card'){
+       
+//         const deckListX = document.querySelector('.main-deck-list').getBoundingClientRect().x;
+//         const deckListY = document.querySelector('.main-deck-list').getBoundingClientRect().y + window.scrollY; 
+//         const deckListW = document.querySelector('.main-deck-list').getBoundingClientRect().width;
+//         const deckListH = document.querySelector('.main-deck-list').getBoundingClientRect().height;
+//         if(e.pageX >= deckListX && e.pageX <= deckListX + deckListW && e.pageY >= deckListY && e.pageY <= deckListY + deckListH){
+            
+//             Store.storeToMainDeck(e.target.textContent);
+//             e.target.removeAttribute('id', 'clicked-card'); 
+//             e.target.remove();
+//             document.querySelector('.main-deck-list').innerHTML = '';
+//             Store.displayMainDeck();
+
+//         } 
+//         isClicked = false;
+        
+//   }
+// });
+
+// document.addEventListener('mousemove', function(e){
+//     if(isClicked){
+//     const clickedCard = document.getElementById('clicked-card');
+//     clickedCard.style.position = 'fixed';
+//     clickedCard.style.left = `${e.pageX}px`;
+//     clickedCard.style.top = `${e.pageY - window.scrollY}px`;
+//     }
+// });  
 
