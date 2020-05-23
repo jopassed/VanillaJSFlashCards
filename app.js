@@ -38,7 +38,7 @@ class UI {
         const li = document.createElement('li');
         li.className = 'store-card';
         const ul = document.querySelector(deckClass)
-        li.innerHTML = `${card.backTerm}<a href="#"><i class="edit fa fa-pencil"><i class="delete fa fa-times"></i></a>`
+        li.innerHTML = `${card.backTerm}<a href="#"><i class="edit fa fa-pencil"></i><i class="delete fa fa-times"></i></a>`
         ul.appendChild(li);
     }
 
@@ -283,6 +283,7 @@ document.querySelector('#shuffle').addEventListener('click', ui.dealCard);
 document.querySelector('#next').addEventListener('click', ui.nextCardinDeck);
 document.querySelector('#previous').addEventListener('click', ui.prevCardinDeck);
 document.querySelector('.card-list').addEventListener('click', (e) => {
+   
     ui.deleteCard(e.target);
     if(e.target.className === 'delete fa fa-times'){
     Store.deleteFromList(e.target.parentElement.parentElement.textContent);
@@ -293,7 +294,7 @@ document.querySelector('.card-list').addEventListener('click', (e) => {
 
 document.querySelector('.main-deck-list').addEventListener('click', (e) => {
     ui.deleteCard(e.target);
-    if(e.target.className === 'delete fa fa-times'){
+     if(e.target.className === 'delete fa fa-times'){
     Store.mainToStorageDeck(e.target.parentElement.parentElement.textContent); 
     }
     e.preventDefault();
