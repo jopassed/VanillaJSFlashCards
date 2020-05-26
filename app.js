@@ -40,8 +40,8 @@ class UI {
         li.setAttribute('draggable', 'true');
         const ul = document.querySelector(deckClass)
         li.innerHTML = `${card.backTerm}<a href="#"><i class="edit fa fa-pencil"></i></a><a href="#"><i class="delete fa fa-times"></i></a>`
-        li.ondragstart = dragStart;
-        li.ondragend = dragEnd;
+        li.ondragstart = this.dragStart;
+        li.ondragend = this.dragEnd;
         if (deckClass === '.main-deck-list'){
         const anchors = li.querySelectorAll('a');
         anchors.forEach(anchor => {
@@ -72,7 +72,7 @@ class UI {
         if(mainDeck.cards[0] != undefined){
         UIcardTxt.innerText = mainDeck.cards[mainDeck.shuffle()].frontDesc;
         } else {    
-            UIcardTxt.innerText = 'No cards, press a card to start!';
+            UIcardTxt.innerText = 'No cards, add a card to start!';
         }
     }
 
@@ -142,10 +142,10 @@ class UI {
     }
 
     //select next card from main Deck
-         nextCardinDeck(){
-    const mainDeck = Store.getMainDeck(),
-          discardDeck = Store.getDiscardDeck(),
-          currentCard = mainDeck.cards[ui.findDisplayedCard(mainDeck)];
+    nextCardinDeck(){
+        const mainDeck = Store.getMainDeck(),
+        discardDeck = Store.getDiscardDeck(),
+        currentCard = mainDeck.cards[ui.findDisplayedCard(mainDeck)];
     if (mainDeck.cards.length > 1){  
         mainDeck.cards.splice(ui.findDisplayedCard(mainDeck), 1);
         discardDeck.cards.unshift(currentCard);
@@ -158,10 +158,10 @@ class UI {
 }
 
     //select previous cards
-        prevCardinDeck(){
+prevCardinDeck(){
     const UIcardTxt = document.querySelector('#flash-card-txt'),        
-          mainDeck = Store.getMainDeck(),
-          discardDeck = Store.getDiscardDeck();
+        mainDeck = Store.getMainDeck(),
+        discardDeck = Store.getDiscardDeck();
     if (discardDeck.cards.length >= 1){
         let currentCard = discardDeck.cards[0];
         UIcardTxt.innerText = currentCard.frontDesc;
@@ -174,12 +174,49 @@ class UI {
     }
 }
   //set card height responsively to width
-  setCardHeight(){
-    const UIflashcard = document.querySelector('#flash-card');
-    let cardWidth = UIflashcard.offsetWidth;
-    let setHeight = cardWidth / 1.666666666667;
-    UIflashcard.style.height = `${setHeight}px`;
+    setCardHeight(){
+        const UIflashcard = document.querySelector('#flash-card');
+        let cardWidth = UIflashcard.offsetWidth;
+        let setHeight = cardWidth / 1.666666666667;
+        UIflashcard.style.height = `${setHeight}px`;
 }
+
+//drag and drop functions
+
+    drop_handlerMain(e) {
+        const dragged = document.getElementById('dragged');
+        Store.storeToMainDeck(dragged.textContent);
+        const list = document.querySelector('.main-deck-list');
+        const anchors = dragged.querySelectorAll('a');
+        anchors.forEach(anchor => {
+            anchor.style.display = 'none';
+    });
+        dragged.removeAttribute('id', 'dragged');
+        list.appendChild(dragged);
+
+}
+
+    drop_handler(e) {
+        const dragged = document.getElementById('dragged');
+        Store.mainToStorageDeck(dragged.textContent);
+        const list = document.querySelector('.card-list');
+        const anchors = dragged.querySelectorAll('a');
+        anchors.forEach(anchor => {
+            anchor.style.display = 'inline';
+    });
+        dragged.removeAttribute('id', 'dragged');
+        list.appendChild(dragged);
+
+}
+
+    dragStart(e){
+        e.target.setAttribute('id', 'dragged');     
+}
+
+    dragEnd(e){
+        e.target.removeAttribute('id', 'dragged');     
+}
+
 
 }
 
@@ -314,8 +351,8 @@ window.addEventListener('load', loadEvents);
 window.addEventListener('resize', ui.setCardHeight);
 
 //click events
-document.querySelector('#flash-card').addEventListener('mousedown', ui.flipCard);
-document.querySelector('#flash-card').addEventListener('mouseup', ui.flipCard);
+document.querySelector('#flash-card').addEventListener('click', ui.flipCard);
+// document.querySelector('#flash-card').addEventListener('mouseup', ui.flipCard);
 document.querySelector('#shuffle').addEventListener('click', ui.dealCard);
 document.querySelector('#next').addEventListener('click', ui.nextCardinDeck);
 document.querySelector('#previous').addEventListener('click', ui.prevCardinDeck);
@@ -360,7 +397,24 @@ document.getElementById('deckpagebtn').addEventListener('click',(e) => {
 
 document.querySelector('.close-btn').addEventListener('click',(e) => {
     document.querySelector('.deck-page').classList.remove('show-page');
+    ui.dealCard();
     e.preventDefault();
+});
+//drag events
+const draggables = document.querySelectorAll('.draggable');
+draggables.forEach(draggable => {
+draggable.addEventListener('dragstart', ui.dragStart);
+draggable.addEventListener('dragend', ui.dragEnd);
+});
+  
+document.querySelector('.main-deck-list').addEventListener('drop', ui.drop_handlerMain);
+document.querySelector('.main-deck-list').addEventListener('dragover', (e) => {
+e.preventDefault();
+});
+
+document.querySelector('.card-list').addEventListener('drop', ui.drop_handler);
+document.querySelector('.card-list').addEventListener('dragover', (e) => {
+e.preventDefault();
 });
 
 
@@ -372,59 +426,5 @@ function loadEvents(){
     ui.setCardHeight();
     ui.dealCard();
 
-    //doesn't work for newly added elements to the dom via the form :(
-    const draggables = document.querySelectorAll('.draggable');
-
-    // const dragStoreListItems = document.querySelectorAll('.card-list li');
-    // const dragMainItems = document.querySelectorAll('.main-card-list li');
-
-    draggables.forEach(draggable => {
-    draggable.addEventListener('dragstart', dragStart);
-    draggable.addEventListener('dragend', dragEnd);
-    });
-    function dragStart(e){
-        e.target.setAttribute('id', 'dragged');     
-    }
-
-    function dragEnd(e){
-        e.target.removeAttribute('id', 'dragged');     
-    }
-
-    document.querySelector('.main-deck-list').addEventListener('drop', drop_handlerMain);
-    document.querySelector('.main-deck-list').addEventListener('dragover', (e) => {
-        e.preventDefault();
-    });
-
-    document.querySelector('.card-list').addEventListener('drop', drop_handler);
-    document.querySelector('.card-list').addEventListener('dragover', (e) => {
-        e.preventDefault();
-    });
-
-    function drop_handlerMain(e) {
-        const dragged = document.getElementById('dragged');
-        Store.storeToMainDeck(dragged.textContent);
-        const list = document.querySelector('.main-deck-list');
-        const anchors = dragged.querySelectorAll('a');
-        anchors.forEach(anchor => {
-            anchor.style.display = 'none';
-        });
-        dragged.removeAttribute('id', 'dragged');
-        list.appendChild(dragged);
-   
-    }
-
-    function drop_handler(e) {
-        const dragged = document.getElementById('dragged');
-        Store.mainToStorageDeck(dragged.textContent);
-        const list = document.querySelector('.card-list');
-        const anchors = dragged.querySelectorAll('a');
-        anchors.forEach(anchor => {
-            anchor.style.display = 'inline';
-        });
-        dragged.removeAttribute('id', 'dragged');
-        list.appendChild(dragged);
-   
-    }
-    
 }
 

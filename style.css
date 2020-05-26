@@ -38,6 +38,10 @@ i {
     right:5px;
 }
 
+.input-wrap button {
+    width:200px;
+}
+
 .message {
     font-size:1em;
 }
