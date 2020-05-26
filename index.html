@@ -5,53 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" integrity="sha256-2YQRJMXD7pIAPHiXr0s+vlRWA7GYJEK0ARns7k2sbHY=" crossorigin="anonymous" />
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-    <style>
-        #flash-card {
-            text-align:center;
-            padding:10px;
-            border: 1px solid grey;
-            width:100%;
-            max-width: 500px;
-            box-sizing: border-box;
-            border-radius: 5px;
-            margin: 0 auto;
-            display:flex;
-            align-items: center;
-        }
-
-        #flash-card span {
-            font-size: 1em;
-
-        }
-
-        .message {
-            font-size:5em;
-        }
-
-        .input-wrap {
-            margin-top:25px;
-            display:flex;
-            flex-direction: row;
-            justify-content: space-evenly;
-        }
-
-        #guess-form {
-            display:flex;
-            flex-direction: row;
-            justify-content: stretch;
-        }
-
-        #guess-form input {
-            width:50%;
-            box-sizing: border-box;
-         }
-
-           li {
-             cursor: pointer;
-         }
-
-    </style>
-    
+    <link rel="stylesheet" href="style.css">
     <title>JS Flashcards - made with vanilla JS</title>
 </head>
 <body>
@@ -60,8 +14,10 @@
         
         <h1>JS Flashcards</h1>
         <div id="flash-card">
+            <i class="fa fa-refresh"></i>
             <span id="flash-card-txt"></span>
         </div>
+        <p class="message"></p>
         <div class="input-wrap">
             <button id="previous"><i class="fa fa-angle-left "></i> Previous Card</button>
             <button id="shuffle"><i class="fa fa-refresh"></i> Shuffle Cards <i class="fa fa-refresh"></i></button>
@@ -75,10 +31,15 @@
     </div>
 
     <div class="input-wrap">
-        <button class="decks-btn">Add a Card / Edit Deck</button>
+        <button class="decks-btn" id="deckpagebtn">Add a Card / Edit Deck</button>
     </div>
-    <p class="message"></p>
+  </div>
 
+</div>
+<div class="deck-page">
+    <div class="container">
+        <a href="#" class="close-btn"><i class="fa fa-close"></i></a>
+    <p class="deck-message"></p>
     <h3>Add a Card</h3>
         <form id="card-form">
             <div>
@@ -94,7 +55,7 @@
             </div>
         </form>
         <hr>
-        <div class="decks-page"></div>
+      
         <div class="row">
         <div class="six columns"> 
         <h5>Cards in Storage Deck</h5>
@@ -107,9 +68,7 @@
         </ul>
     </div>
 </div>
-    </div>
-</div>
-   
+</div> 
 <script src="app.js"></script>    
 </body>
 </html>

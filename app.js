@@ -25,8 +25,8 @@ class Card {
 
 class UI {
 
-    UIMessages(msg, color){
-        const UImessage = document.querySelector('.message');
+    UIMessages(msg, color, msgClass){
+        const UImessage = document.querySelector(msgClass);
         UImessage.style.color = color;
         UImessage.innerText = msg;
         setTimeout(() => {
@@ -36,9 +36,18 @@ class UI {
 
     addCard(card, deckClass){
         const li = document.createElement('li');
-        li.className = 'store-card';
+        li.className = 'store-card draggable';
+        li.setAttribute('draggable', 'true');
         const ul = document.querySelector(deckClass)
-        li.innerHTML = `${card.backTerm}<a href="#"><i class="edit fa fa-pencil"></i><i class="delete fa fa-times"></i></a>`
+        li.innerHTML = `${card.backTerm}<a href="#"><i class="edit fa fa-pencil"></i></a><a href="#"><i class="delete fa fa-times"></i></a>`
+        li.ondragstart = dragStart;
+        li.ondragend = dragEnd;
+        if (deckClass === '.main-deck-list'){
+        const anchors = li.querySelectorAll('a');
+        anchors.forEach(anchor => {
+            anchor.style.display = 'none';  
+        });    
+        }
         ul.appendChild(li);
     }
 
@@ -47,24 +56,28 @@ class UI {
               UIguessInput = document.querySelector('#guess-card'),
               mainDeck = Store.getMainDeck(),
               currentCard = mainDeck.cards[ui.findDisplayedCard(mainDeck)];
-        console.log(currentCard);
         if (UIguessInput.value === currentCard.backTerm){
-            ui.UIMessages('Correct!', 'green');
+            ui.UIMessages('Correct!', 'green','.message');
             UIcardTxt.innerText = currentCard.backTerm;
         } else {
-            ui.UIMessages('Incorrect!', 'red');
+            ui.UIMessages('Incorrect!', 'red','.message');
         }
         e.preventDefault();
     }
 
     dealCard(){
         const mainDeck = Store.getMainDeck(),
-             UIcardTxt = document.querySelector('#flash-card-txt');
+        UIcardTxt = document.querySelector('#flash-card-txt');
+        //conditional for empy deck
+        if(mainDeck.cards[0] != undefined){
         UIcardTxt.innerText = mainDeck.cards[mainDeck.shuffle()].frontDesc;
+        } else {    
+            UIcardTxt.innerText = 'No cards, press a card to start!';
+        }
     }
 
     deleteCard(target){
-        if(target.className === 'delete fa fa-times'){
+        if(target.className === 'delete fa fa-times' || target.className === 'edit fa fa-pencil'){
             target.parentElement.parentElement.remove();         
         }
     }
@@ -73,12 +86,22 @@ class UI {
     const UIcardTxt = document.querySelector('#flash-card-txt'),
           mainDeck = Store.getMainDeck(),
           currentCardIndex = ui.findDisplayedCard(mainDeck),
-          currentTxt = UIcardTxt.innerText;
-    if(currentTxt === mainDeck.cards[currentCardIndex].frontDesc){
-      UIcardTxt.innerText = mainDeck.cards[currentCardIndex].backTerm;
-    } else {
-      UIcardTxt.innerText = mainDeck.cards[currentCardIndex].frontDesc;
-    }
+          currentTxt = UIcardTxt.innerText,
+          UIcard = document.querySelector("#flash-card");
+          UIcard.classList.toggle('flip-card');
+          
+          setTimeout(() => {
+              if(mainDeck.cards[0] != undefined){
+                if(currentTxt === mainDeck.cards[currentCardIndex].frontDesc){
+                UIcardTxt.innerText = mainDeck.cards[currentCardIndex].backTerm;
+                } else {
+                UIcardTxt.innerText = mainDeck.cards[currentCardIndex].frontDesc;
+                }
+            } else {
+                UIcardTxt.innerText = 'yo, you are flipping but there be no cards brah';
+            }
+            UIcardTxt.classList.toggle('flip-card');
+        },250);
   
   }
 
@@ -98,19 +121,19 @@ class UI {
         //get form values
     getAddCardForm(e){
         const term = document.getElementById('term').value,
-        description = document.getElementById('description').value;
+                description = document.getElementById('description').value;
         // Instantiate a card
         const card = new Card(description, term);
         //Validate
         if(term === '' || description === '') {
         // Error alert
-        ui.UIMessages('Please add a card!', 'red');
+        ui.UIMessages('Please add a card!', 'red', '.deck-message');
         } else{
         ui.addCard(card,'.card-list');
         //add to LS
         Store.addCardsToStorage(card);
         // tell me the card is added
-        ui.UIMessages('Card Added!', 'green');
+        ui.UIMessages('Card Added!', 'green','.deck-message');
         // Clear Fields
         document.getElementById('term').value = '';
         document.getElementById('description').value = '';
@@ -130,7 +153,7 @@ class UI {
         Store.addDeckToStorage('discardDeck', discardDeck);
         ui.dealCard();
     } else {
-        ui.UIMessages('No More Cards...', 'red');
+        ui.UIMessages('No More Cards...', 'red','.message');
     }
 }
 
@@ -147,7 +170,7 @@ class UI {
         Store.addDeckToStorage('mainDeck', mainDeck);
         Store.addDeckToStorage('discardDeck', discardDeck);
     } else {
-        ui.UIMessages('No More Cards...', 'red');
+        ui.UIMessages('No More Cards...', 'red', '.message');
     }
 }
   //set card height responsively to width
@@ -212,6 +235,20 @@ class Store {
         Store.addDeckToStorage('storeDeck', storeDeck);
     }
 
+    static pullFromList(term) {
+        const storeDeck = Store.getStorageDeck();
+        let pulledCard;
+
+        storeDeck.cards.forEach(function(card, index){
+            if(card.backTerm === term) {
+               pulledCard = storeDeck.cards.splice(index, 1);
+            }
+        });
+        Store.addDeckToStorage('storeDeck', storeDeck);
+        return pulledCard[0];
+
+    }
+
     static mainToStorageDeck(term) {
         const mainDeck = Store.getMainDeck();
         const storeDeck = Store.getStorageDeck();
@@ -220,7 +257,7 @@ class Store {
             if(card.backTerm === term) {
                 storeDeck.cards.push(card);
                 mainDeck.cards.splice(index, 1);
-                ui.addCard(card, '.card-list');
+     
             }
         });
         Store.addDeckToStorage('mainDeck', mainDeck);
@@ -235,7 +272,7 @@ class Store {
             if(card.backTerm === term) {
                 mainDeck.cards.push(card);
                 storeDeck.cards.splice(index, 1);
-                ui.addCard(card, '.card-list');
+          
             }
         });
         Store.addDeckToStorage('mainDeck', mainDeck);
@@ -282,11 +319,20 @@ document.querySelector('#flash-card').addEventListener('mouseup', ui.flipCard);
 document.querySelector('#shuffle').addEventListener('click', ui.dealCard);
 document.querySelector('#next').addEventListener('click', ui.nextCardinDeck);
 document.querySelector('#previous').addEventListener('click', ui.prevCardinDeck);
+
 document.querySelector('.card-list').addEventListener('click', (e) => {
-   
+    //remove from ui for edit and delete
     ui.deleteCard(e.target);
     if(e.target.className === 'delete fa fa-times'){
     Store.deleteFromList(e.target.parentElement.parentElement.textContent);
+    }
+    if(e.target.className === 'edit fa fa-pencil') {
+        
+        let pulledCard = Store.pullFromList(e.target.parentElement.parentElement.textContent);
+        document.getElementById('term').value = pulledCard.backTerm;
+        document.getElementById('description').value = pulledCard.frontDesc;
+        ui.UIMessages('Edit the Card', 'green','.deck-message');
+        
     }
   
     e.preventDefault();
@@ -294,9 +340,10 @@ document.querySelector('.card-list').addEventListener('click', (e) => {
 
 document.querySelector('.main-deck-list').addEventListener('click', (e) => {
     ui.deleteCard(e.target);
+    //delete from storage
      if(e.target.className === 'delete fa fa-times'){
     Store.mainToStorageDeck(e.target.parentElement.parentElement.textContent); 
-    }
+    }  
     e.preventDefault();
 });
 
@@ -305,6 +352,18 @@ document.querySelector('#guess-form').addEventListener('submit', ui.cardGuesser)
 
 //add card listener
 document.getElementById('card-form').addEventListener('submit', ui.getAddCardForm);
+//toggle add card page
+document.getElementById('deckpagebtn').addEventListener('click',(e) => {
+    document.querySelector('.deck-page').classList.add('show-page');
+    e.preventDefault();
+});
+
+document.querySelector('.close-btn').addEventListener('click',(e) => {
+    document.querySelector('.deck-page').classList.remove('show-page');
+    e.preventDefault();
+});
+
+
 
 //load events
 function loadEvents(){
@@ -312,47 +371,60 @@ function loadEvents(){
     Store.displayCards();
     ui.setCardHeight();
     ui.dealCard();
+
+    //doesn't work for newly added elements to the dom via the form :(
+    const draggables = document.querySelectorAll('.draggable');
+
+    // const dragStoreListItems = document.querySelectorAll('.card-list li');
+    // const dragMainItems = document.querySelectorAll('.main-card-list li');
+
+    draggables.forEach(draggable => {
+    draggable.addEventListener('dragstart', dragStart);
+    draggable.addEventListener('dragend', dragEnd);
+    });
+    function dragStart(e){
+        e.target.setAttribute('id', 'dragged');     
+    }
+
+    function dragEnd(e){
+        e.target.removeAttribute('id', 'dragged');     
+    }
+
+    document.querySelector('.main-deck-list').addEventListener('drop', drop_handlerMain);
+    document.querySelector('.main-deck-list').addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    document.querySelector('.card-list').addEventListener('drop', drop_handler);
+    document.querySelector('.card-list').addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    function drop_handlerMain(e) {
+        const dragged = document.getElementById('dragged');
+        Store.storeToMainDeck(dragged.textContent);
+        const list = document.querySelector('.main-deck-list');
+        const anchors = dragged.querySelectorAll('a');
+        anchors.forEach(anchor => {
+            anchor.style.display = 'none';
+        });
+        dragged.removeAttribute('id', 'dragged');
+        list.appendChild(dragged);
+   
+    }
+
+    function drop_handler(e) {
+        const dragged = document.getElementById('dragged');
+        Store.mainToStorageDeck(dragged.textContent);
+        const list = document.querySelector('.card-list');
+        const anchors = dragged.querySelectorAll('a');
+        anchors.forEach(anchor => {
+            anchor.style.display = 'inline';
+        });
+        dragged.removeAttribute('id', 'dragged');
+        list.appendChild(dragged);
+   
+    }
+    
 }
-
-
-//drag cards from storage deck to main deck. consider making this a button instead next time you work on it.
-// let isClicked = false;
-
-// document.querySelector('.card-list').addEventListener('mousedown', function(e) {
-        
-//     if (e.target.className === 'store-card'){
-//         e.target.setAttribute('id', 'clicked-card');   
-//         isClicked = true;
-//      }
-// });
-// document.addEventListener('mouseup', function(e){
-
-//     if (e.target.className === 'store-card'){
-       
-//         const deckListX = document.querySelector('.main-deck-list').getBoundingClientRect().x;
-//         const deckListY = document.querySelector('.main-deck-list').getBoundingClientRect().y + window.scrollY; 
-//         const deckListW = document.querySelector('.main-deck-list').getBoundingClientRect().width;
-//         const deckListH = document.querySelector('.main-deck-list').getBoundingClientRect().height;
-//         if(e.pageX >= deckListX && e.pageX <= deckListX + deckListW && e.pageY >= deckListY && e.pageY <= deckListY + deckListH){
-            
-//             Store.storeToMainDeck(e.target.textContent);
-//             e.target.removeAttribute('id', 'clicked-card'); 
-//             e.target.remove();
-//             document.querySelector('.main-deck-list').innerHTML = '';
-//             Store.displayMainDeck();
-
-//         } 
-//         isClicked = false;
-        
-//   }
-// });
-
-// document.addEventListener('mousemove', function(e){
-//     if(isClicked){
-//     const clickedCard = document.getElementById('clicked-card');
-//     clickedCard.style.position = 'fixed';
-//     clickedCard.style.left = `${e.pageX}px`;
-//     clickedCard.style.top = `${e.pageY - window.scrollY}px`;
-//     }
-// });  
 
