@@ -98,7 +98,7 @@ class UI {
                 UIcardTxt.innerText = mainDeck.cards[currentCardIndex].frontDesc;
                 }
             } else {
-                UIcardTxt.innerText = 'yo, you are flipping but there be no cards brah';
+                UIcardTxt.innerText = 'No Cards in Deck, press Add a Card / Edit Deck to Begin!';
             }
             UIcardTxt.classList.toggle('flip-card');
         },250);
